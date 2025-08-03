@@ -1,0 +1,34 @@
+name: Check Repo Size 
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  check-size:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Calculate and alert if repo size > 800MB
+        run: |
+          echo "🔍 Checking total repo size..."
+
+          size_bytes=$(du -sb . | cut -f1)
+          size_mb=$((size_bytes / 1024 / 1024))
+
+          echo "📦 Repo size: ${size_mb} MB"
+
+          if [ "$size_mb" -gt 800 ]; then
+            echo "🚨 ALERT: Repo size exceeds 800 MB!"
+            exit 1
+          else
+            echo "✅ Size is within safe limits."
+          fi
+
+      - name: 📂 List all files sorted by size (excluding .git)
+        run: |
+          echo "🧾 Listing all files sorted by size (excluding .git):"
+          find . -type f ! -path "./.git/*" -exec du -h {} + | sort -hr
